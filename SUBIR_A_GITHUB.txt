@@ -1,0 +1,92 @@
+================================================================
+  ARCHIVOS A SUBIR A GITHUB PAGES
+  Calculadora Histórica ENDES Perú
+  Dr. Joshuan J. Barboza · Universidad Señor de Sipán
+================================================================
+
+✓ SUBE EXACTAMENTE ESTOS 7 ARCHIVOS a la RAÍZ de tu repositorio:
+
+  1. index.html        ← 16 KB · página principal
+  2. data.js           ← 53 KB · 70 outcomes + 67 variables + generador
+  3. app.js            ← 47 KB · lógica de UI, multi-select, DAG, validador
+  4. style.css         ← 12 KB · estilos
+  5. README.md         ←  5 KB · documentación del repo
+  6. LICENSE           ←  1 KB · CC-BY 4.0 con tus créditos
+  7. .nojekyll         ←  0 KB · evita procesamiento Jekyll
+
+✗ NO subas estos (son auxiliares locales, no van al sitio web):
+  - iniciar_servidor_local.command  (solo para tu Mac)
+  - SUBIR_A_GITHUB.txt              (este archivo)
+
+
+----------------------------------------------------------------
+  PASOS PARA PUBLICAR (5 minutos)
+----------------------------------------------------------------
+
+PASO 1 · Crear repositorio en GitHub
+   - Ve a https://github.com/new
+   - Repository name: endes-calculadora  (o el nombre que prefieras)
+   - Visibility: Public
+   - NO marques "Add a README" (ya lo tienes)
+   - Click "Create repository"
+
+PASO 2 · Subir los 7 archivos
+   Opción A · Interfaz web (más fácil):
+   - En tu repo nuevo, click "uploading an existing file"
+   - Arrastra los 7 archivos
+   - Commit message: "Versión inicial calculadora ENDES"
+   - Click "Commit changes"
+
+   Opción B · Línea de comandos:
+     cd "/Users/joshuanbarbozameca/Library/Mobile Documents/com~apple~CloudDocs/BASE ENDES/calculadora_github"
+     git init
+     git add index.html data.js app.js style.css README.md LICENSE .nojekyll
+     git commit -m "Versión inicial calculadora ENDES"
+     git branch -M main
+     git remote add origin https://github.com/[TU-USUARIO]/endes-calculadora.git
+     git push -u origin main
+
+PASO 3 · Activar GitHub Pages
+   - Ve a Settings → Pages
+   - Source: "Deploy from a branch"
+   - Branch: main
+   - Folder: / (root)
+   - Click Save
+
+PASO 4 · Esperar deploy (~1 minuto)
+   - Refresca Settings → Pages
+   - Aparecerá: "Your site is live at https://[TU-USUARIO].github.io/endes-calculadora/"
+
+PASO 5 · ¡Listo!
+   - Visita esa URL
+   - Comparte el link con quien necesites
+   - Para citarla, usa el formato en README.md
+
+
+----------------------------------------------------------------
+  ACTUALIZACIONES POSTERIORES
+----------------------------------------------------------------
+
+Cuando quieras actualizar (ej. reemplazar data.js con datos reales
+del pipeline R), solo:
+
+  1. Edita el archivo localmente (o en GitHub directamente)
+  2. Sube la nueva versión (drag & drop sobrescribe)
+  3. GitHub Pages se actualiza solo en ~30 segundos
+
+Para los datos REALES del pipeline R:
+  - Corre los scripts en BASE ENDES/R/ (00 a 05)
+  - Luego ejecuta BASE ENDES/R/07_export_calc_data_js.R
+  - Sube el data.js generado a GitHub (sobrescribe)
+
+
+----------------------------------------------------------------
+  REPORTE DE BUGS / SOPORTE
+----------------------------------------------------------------
+
+Si algo no funciona en producción:
+  - Botón "📨 Solicitar ayuda" en la propia calculadora
+  - jbarbozameca@gmail.com
+  - Abre un Issue en tu propio repo GitHub
+
+================================================================
