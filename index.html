@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora ENDES Perú · 1996–2024</title>
+<meta name="description" content="Calculadora interactiva sobre la Encuesta Demográfica y de Salud Familiar del Perú, con análisis univariado, bivariado y multivariado para 70 outcomes en 23 años. Por Dr. Joshuan J. Barboza, Universidad Señor de Sipán.">
+<meta name="author" content="Dr. Joshuan J. Barboza">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Calculadora ENDES Perú
+      <small> · Análisis histórico 1996–2024</small></h1>
+  </div>
+  <button class="help-btn" onclick="ENDESApp.openHelp()">📨 Solicitar ayuda / Consulta</button>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="univariado">Univariado</button>
+  <button data-tab="bivariado">Bivariado</button>
+  <button data-tab="multivariado">Multivariado</button>
+  <button data-tab="explorador">🔎 Explorador</button>
+  <button data-tab="acerca">Acerca de</button>
+</nav>
+
+<main>
+
+<!-- ============ UNIVARIADO ============ -->
+<section id="univariado" class="tab-content active">
+  <div class="controls">
+    <div class="control-group">
+      <label>Outcome <small id="uni-count" style="color:var(--muted)"></small></label>
+      <select id="uni-outcome"></select>
+    </div>
+    <div class="control-group">
+      <label>Año</label>
+      <select id="uni-year"></select>
+    </div>
+    <div class="control-group">
+      <label>Estratificar por</label>
+      <select id="uni-strat">
+        <option value="">(ninguno - total nacional)</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="uni-run">▶ Calcular</button>
+      <button class="btn btn-secondary" id="uni-export">📥 Excel</button>
+    </div>
+  </div>
+
+  <details class="advanced-toggle">
+    <summary>⚙️ Modo experto · diseño muestral</summary>
+    <div class="advanced-body">
+      <div class="control-group"><label>Ponderación</label>
+        <select id="uni-weight"><option value="yes">Ponderado (recomendado)</option>
+                                <option value="no">Sin ponderar</option></select></div>
+      <div class="control-group"><label>Método IC</label>
+        <select id="uni-ci"><option>logit</option><option>Wilson</option><option>Wald</option></select></div>
+      <div class="control-group"><label>Nivel confianza</label>
+        <select id="uni-level"><option>95%</option><option>90%</option><option>99%</option></select></div>
+    </div>
+  </details>
+
+  <div class="results">
+    <div class="summary-card" id="uni-summary"></div>
+    <h2 id="uni-title">Resultado univariado</h2>
+    <div class="subtitle" id="uni-subtitle"></div>
+    <table class="result-table" id="uni-table"><thead></thead><tbody></tbody></table>
+    <div id="uni-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ BIVARIADO ============ -->
+<section id="bivariado" class="tab-content">
+  <div class="controls">
+    <div class="control-group">
+      <label>Outcome</label>
+      <select id="bi-outcome"></select>
+    </div>
+    <div class="control-group">
+      <label>Covariable / variable principal <small style="color:var(--muted)">(70+ opciones)</small></label>
+      <select id="bi-cov"></select>
+    </div>
+    <div class="control-group">
+      <label>Año</label>
+      <select id="bi-year"></select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="bi-run">▶ Calcular</button>
+      <button class="btn btn-secondary" id="bi-export">📥 Excel</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2 id="bi-title">Análisis bivariado</h2>
+    <div class="subtitle" id="bi-subtitle"></div>
+    <table class="result-table" id="bi-table"><thead></thead><tbody></tbody></table>
+    <div id="bi-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ MULTIVARIADO ============ -->
+<section id="multivariado" class="tab-content">
+  <div class="controls">
+    <div class="control-group">
+      <label>Outcome</label>
+      <select id="multi-outcome"></select>
+    </div>
+    <div class="control-group" style="grid-column: span 2;">
+      <label>Variables principales de exposición
+        <small style="color:var(--muted)">· puedes elegir 1 o varias · 70+ opciones agrupadas</small></label>
+      <div id="multi-main-select" class="multi-select">
+        <div class="ms-toggle" tabindex="0">
+          <span class="ms-summary">Click para elegir variables principales</span>
+          <span class="ms-arrow"></span>
+        </div>
+        <div class="ms-dropdown" hidden>
+          <div class="ms-actions">
+            <button type="button" class="btn btn-secondary" data-action="clear">Limpiar todo</button>
+            <button type="button" class="btn btn-secondary" data-action="sociodemo">Solo sociodemográficas</button>
+            <button type="button" class="btn btn-secondary" data-action="default">Set típico literatura</button>
+            <input type="text" class="ms-search" placeholder="🔎 Filtrar variables...">
+            <button type="button" class="btn ms-close" data-action="close" title="Cerrar (Esc)">✕ Cerrar</button>
+          </div>
+          <div class="ms-body"></div>
+          <div class="ms-footer">
+            <span class="ms-counter">0 seleccionadas</span>
+            <button type="button" class="btn btn-primary ms-apply" data-action="apply">Aplicar y cerrar ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>Año</label>
+      <select id="multi-year"></select>
+    </div>
+    <div class="control-group">
+      <label>Modelo</label>
+      <select id="multi-model">
+        <option value="both">Ambos (logística + Poisson)</option>
+        <option value="logit">Solo logística (ORa)</option>
+        <option value="poisson">Solo Poisson (RPa)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="note" id="multi-confusores-note">
+    <strong>Confusores ajustados (set estándar):</strong>
+    <span id="multi-confusores-list"></span>
+  </div>
+
+  <div class="actions" style="margin-bottom:1rem;">
+    <button class="btn btn-primary" id="multi-run">▶ Ajustar modelo</button>
+    <button class="btn btn-secondary" id="multi-export">📥 Excel</button>
+    <button class="btn btn-secondary" id="multi-cite">📋 Citar este resultado</button>
+  </div>
+
+  <div class="results">
+    <h2 id="multi-title">Modelo multivariado</h2>
+    <div class="subtitle" id="multi-subtitle"></div>
+    <table class="result-table" id="multi-table"><thead></thead><tbody></tbody></table>
+    <div id="multi-chart" class="chart-container"></div>
+
+    <details class="dag-section" open>
+      <summary><strong>🔗 Diagrama Acíclico Dirigido (DAG)</strong> —
+        estructura causal hipotetizada de este modelo</summary>
+      <div class="note note-info" style="margin-top:0.8rem;">
+        El DAG muestra cómo se asume que las variables principales (azul) y los
+        confusores (gris) se relacionan con el outcome (rojo). Las flechas
+        sólidas indican efecto causal directo; las punteadas, asociación
+        no causal o ruta de backdoor. Inspirado en metodología de Hernán &amp; Robins.
+      </div>
+      <div id="multi-dag" class="dag-container"></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ EXPLORADOR ============ -->
+<section id="explorador" class="tab-content">
+  <div class="note note-info">
+    <strong>🔎 Modo Explorador:</strong> describe cualquier variable cruda
+    del catálogo armonizado. Útil para exploración previa antes de definir
+    un outcome formal.
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Variable</label>
+      <select id="exp-var"></select>
+    </div>
+    <div class="control-group">
+      <label>Año(s)</label>
+      <select id="exp-year"></select>
+    </div>
+    <div class="control-group">
+      <label>Estratificar por</label>
+      <select id="exp-strat">
+        <option value="">Total nacional</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="exp-run">▶ Describir</button>
+      <button class="btn btn-secondary" id="exp-export">📥 Excel</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2 id="exp-title">Distribución de la variable</h2>
+    <div class="subtitle" id="exp-subtitle"></div>
+    <table class="result-table" id="exp-table"><thead></thead><tbody></tbody></table>
+    <div id="exp-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ ACERCA DE ============ -->
+<section id="acerca" class="tab-content">
+  <div class="results">
+    <h2>Acerca de esta calculadora</h2>
+    <p>La <strong>Calculadora Histórica ENDES Perú</strong> es una herramienta
+      web open-source que permite a investigadores, estudiantes y tomadores
+      de decisión obtener estimaciones poblacionales y modelos asociativos
+      sobre la Encuesta Demográfica y de Salud Familiar del INEI, cubriendo
+      23 años (1996–2024) en sus 13 módulos.</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Diseño metodológico</h3>
+    <p>Todas las estimaciones aplican el diseño muestral complejo de ENDES
+      (estratificación por departamento × área, conglomerados, ponderación)
+      usando el paquete <code>survey</code> de R. Para outcomes binarios el
+      multivariado reporta simultáneamente:</p>
+    <ul style="margin-left:1.5rem;margin-top:0.5rem;">
+      <li><strong>OR ajustada (ORa)</strong> — regresión logística <code>quasibinomial</code></li>
+      <li><strong>RP ajustada (RPa)</strong> — regresión Poisson <code>quasipoisson</code> con varianza robusta</li>
+    </ul>
+    <p style="margin-top:0.5rem;">La RPa es el estimador preferido en la
+      literatura peruana para outcomes prevalentes ≥10%, según el patrón
+      observado en RPMESP. Para outcomes continuos, regresión lineal con
+      <code>svyglm</code>.</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Confusores estándar</h3>
+    <p>Todo modelo multivariado ajusta por: <strong>sexo, edad agrupada,
+      área de residencia, nivel educativo y quintil de riqueza</strong>.
+      Este set captura el 90% del confounding en la literatura ENDES
+      publicada.</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Outcomes incluidos</h3>
+    <p>70 outcomes organizados en 5 dominios:</p>
+    <div class="summary-card" style="margin-top:0.5rem;">
+      <div class="stat"><div class="stat-label">Niños &lt;5</div><div class="stat-value">22</div></div>
+      <div class="stat"><div class="stat-label">MEF</div><div class="stat-value">18</div></div>
+      <div class="stat"><div class="stat-label">Adultos salud</div><div class="stat-value">13</div></div>
+      <div class="stat"><div class="stat-label">Hogar</div><div class="stat-value">8</div></div>
+      <div class="stat"><div class="stat-label">Continuos</div><div class="stat-value">9</div></div>
+    </div>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Autoría</h3>
+    <div class="credits-card">
+      <div class="name">Dr. Joshuan J. Barboza</div>
+      <div style="color:#e0e7ff;font-size:0.9rem;margin-top:0.2rem;">
+        Docente Investigador · Universidad Señor de Sipán</div>
+      <div style="color:#a5b4fc;font-size:0.85rem;margin-top:0.2rem;">
+        Investigador RENACYT · Nivel Distinguido</div>
+      <div style="color:#cbd5e1;font-size:0.8rem;margin-top:0.5rem;">
+        ORCID: 0000-0002-2896-1407 · SCOPUS ID: 57204457871</div>
+    </div>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Cómo citar</h3>
+    <p style="font-style:italic;background:#f3f4f6;padding:1rem;border-radius:6px;font-size:0.9rem;">
+      Barboza JJ. Calculadora Histórica ENDES Perú [Internet]. Universidad
+      Señor de Sipán; 2026. Disponible en: https://[usuario].github.io/endes-calculadora
+    </p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Estado de los datos</h3>
+    <p id="data-status"></p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);">Reportar error / Solicitar análisis</h3>
+    <p>Si encuentras un error o necesitas un análisis específico que la
+      calculadora no soporta, usa el botón <strong>📨 Solicitar ayuda</strong>
+      en la barra superior o escribe a
+      <a href="mailto:jbarbozameca@gmail.com">jbarbozameca@gmail.com</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ========== MODAL AYUDA ========== -->
+<div class="modal-bg" id="help-modal">
+  <div class="modal">
+    <h3>📨 Solicitar ayuda o reportar problema</h3>
+    <p style="color:var(--muted);margin-bottom:1rem;">
+      Cuéntanos qué necesitas. El mensaje se enviará por correo al autor.</p>
+    <div class="form-group">
+      <label>Tipo de consulta</label>
+      <select id="help-tipo">
+        <option>Error en los resultados</option>
+        <option>Variable o outcome que falta</option>
+        <option>No entiendo la metodología</option>
+        <option>Solicitar análisis específico no soportado</option>
+        <option>Colaboración o cita académica</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Tu nombre *</label>
+      <input type="text" id="help-nombre"></div>
+    <div class="form-group"><label>Tu correo *</label>
+      <input type="email" id="help-email"></div>
+    <div class="form-group"><label>Institución (opcional)</label>
+      <input type="text" id="help-inst"></div>
+    <div class="form-group"><label>Mensaje *</label>
+      <textarea id="help-msg" placeholder="Describe tu consulta..."></textarea></div>
+    <div class="form-group"><label>Contexto actual (auto-adjuntado)</label>
+      <input type="text" id="help-context" readonly style="background:#f3f4f6;color:var(--muted);"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="ENDESApp.closeHelp()">Cancelar</button>
+      <button class="btn btn-primary" onclick="ENDESApp.submitHelp()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4>Calculadora Histórica ENDES Perú</h4>
+      <p>Herramienta de análisis poblacional basada en la Encuesta Demográfica
+         y de Salud Familiar del INEI, cubriendo 23 años (1996–2024) y los
+         13 módulos principales con 70 outcomes pre-operacionalizados.</p>
+      <p style="margin-top:0.8rem;">
+        <strong>Fuente:</strong> INEI - Instituto Nacional de Estadística e Informática del Perú</p>
+    </div>
+    <div>
+      <h4>Autoría</h4>
+      <p><strong>Dr. Joshuan J. Barboza</strong></p>
+      <p>Docente Investigador</p>
+      <p>Universidad Señor de Sipán</p>
+      <p>Investigador RENACYT Distinguido</p>
+      <p><a href="https://orcid.org/0000-0002-2896-1407" target="_blank" rel="noopener">ORCID 0000-0002-2896-1407</a></p>
+    </div>
+    <div>
+      <h4>Recursos</h4>
+      <p><a href="#" data-tab-link="acerca">Metodología</a></p>
+      <p><a href="#" onclick="ENDESApp.openHelp();return false;">Reportar error</a></p>
+      <p><a href="https://proyectos.inei.gob.pe/microdatos/" target="_blank" rel="noopener">Microdatos INEI</a></p>
+      <p><a href="#" id="data-version-link">Versión: <span id="data-version">—</span></a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 Dr. Joshuan J. Barboza · Universidad Señor de Sipán · Datos: INEI Perú ·
+    Licencia: <a href="https://creativecommons.org/licenses/by/4.0/" style="color:#9ca3af;" target="_blank" rel="noopener">CC-BY 4.0</a>
+  </div>
+</footer>
+
+<!-- Librerías externas (con fallback defensivo si algún CDN no carga) -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" onerror="console.warn('Plotly CDN failed')"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js" onerror="console.warn('XLSX CDN failed')"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" onerror="console.warn('Mermaid CDN failed')"></script>
+<script>
+  // Inicializar Mermaid si está disponible (no romper si CDN bloqueado)
+  try {
+    if (typeof mermaid !== "undefined") {
+      mermaid.initialize({ startOnLoad: false, theme: "base",
+        themeVariables: {
+          primaryColor: "#dbeafe",
+          primaryTextColor: "#1e3a8a",
+          primaryBorderColor: "#003366",
+          lineColor: "#6b7280",
+          secondaryColor: "#fef3c7",
+          tertiaryColor: "#fee2e2"
+        } });
+    } else {
+      console.warn("Mermaid no disponible - DAG deshabilitado");
+    }
+  } catch (e) { console.warn("Mermaid init error:", e); }
+</script>
+
+<!-- Datos y aplicación -->
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
