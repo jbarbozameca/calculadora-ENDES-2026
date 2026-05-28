@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peru DHS Calculator · 1996–2024</title>
+<meta name="description" content="Interactive calculator on Peru's Demographic and Family Health Survey, with univariate, bivariate and multivariate analysis for 70 outcomes across 23 years. By Dr. Joshuan J. Barboza, Señor de Sipán University.">
+<meta name="author" content="Dr. Joshuan J. Barboza">
+<link rel="stylesheet" href="style.css?v=1.5.0">
+</head>
+<body>
+
+<header>
+  <div>
+    <h1><span data-i18n="app.title">Peru DHS Calculator</span>
+      <small> · <span data-i18n="app.subtitle">Historical analysis 1996–2024</span></small></h1>
+  </div>
+  <div class="header-actions">
+    <div class="lang-selector">
+      <button class="lang-btn" data-lang="en" title="English">🇬🇧 EN</button>
+      <button class="lang-btn" data-lang="es" title="Español">🇪🇸 ES</button>
+      <button class="lang-btn" data-lang="pt" title="Português">🇧🇷 PT</button>
+    </div>
+    <button class="help-btn" onclick="ENDESApp.openHelp()" data-i18n="header.help">📨 Request help / Support</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="univariado" data-i18n="tab.univariate">Univariate</button>
+  <button data-tab="bivariado" data-i18n="tab.bivariate">Bivariate</button>
+  <button data-tab="multivariado" data-i18n="tab.multivariate">Multivariate</button>
+  <button data-tab="explorador" data-i18n="tab.explorer">🔎 Explorer</button>
+  <button data-tab="acerca" data-i18n="tab.about">About</button>
+</nav>
+
+<main>
+
+<!-- ============ UNIVARIADO ============ -->
+<section id="univariado" class="tab-content active">
+  <div class="controls">
+    <div class="control-group" style="grid-column: span 2;">
+      <label><span data-i18n="label.outcomes">Outcomes / Descriptive variables</span>
+        <small style="color:var(--muted)" data-i18n="label.outcomes_help">· choose one or more for your Table 1</small></label>
+      <div id="uni-outcome-select" class="multi-select">
+        <div class="ms-toggle" tabindex="0">
+          <span class="ms-summary" data-i18n="label.click_choose_outcomes">Click to choose outcomes</span>
+          <span class="ms-arrow"></span>
+        </div>
+        <div class="ms-dropdown" hidden>
+          <div class="ms-actions">
+            <button type="button" class="btn btn-secondary" data-action="clear" data-i18n="ms.clear">Clear all</button>
+            <button type="button" class="btn btn-secondary" data-action="ninos" data-i18n="ms.only_children">Children only</button>
+            <button type="button" class="btn btn-secondary" data-action="adultos" data-i18n="ms.only_adults">Adults only</button>
+            <input type="text" class="ms-search" data-i18n-placeholder="ms.filter_outcomes" placeholder="🔎 Filter outcomes...">
+            <button type="button" class="btn ms-close" data-action="close" data-i18n="ms.close">✕ Close</button>
+          </div>
+          <div class="ms-body"></div>
+          <div class="ms-footer">
+            <span class="ms-counter">0 <span data-i18n="ms.selected_many">selected</span></span>
+            <button type="button" class="btn btn-primary ms-apply" data-action="apply" data-i18n="ms.apply_close">Apply and close ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.year">Year</label>
+      <select id="uni-year"></select>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.stratify_by">Stratify by</label>
+      <select id="uni-strat">
+        <option value="" data-i18n="label.stratify_none">(none - national total)</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="uni-run" data-i18n="btn.calculate">▶ Calculate</button>
+      <button class="btn btn-secondary" id="uni-export" data-i18n="btn.excel">📥 Excel</button>
+    </div>
+  </div>
+
+  <details class="advanced-toggle">
+    <summary data-i18n="expert.title">⚙️ Expert mode · sample design</summary>
+    <div class="advanced-body">
+      <div class="control-group"><label data-i18n="expert.weighting">Weighting</label>
+        <select id="uni-weight"><option value="yes" data-i18n="expert.weighted">Weighted (recommended)</option>
+                                <option value="no" data-i18n="expert.unweighted">Unweighted</option></select></div>
+      <div class="control-group"><label data-i18n="expert.ci_method">CI method</label>
+        <select id="uni-ci"><option>logit</option><option>Wilson</option><option>Wald</option></select></div>
+      <div class="control-group"><label data-i18n="expert.confidence">Confidence level</label>
+        <select id="uni-level"><option>95%</option><option>90%</option><option>99%</option></select></div>
+    </div>
+  </details>
+
+  <div class="results">
+    <div class="summary-card" id="uni-summary"></div>
+    <h2 id="uni-title">Result</h2>
+    <div class="subtitle" id="uni-subtitle"></div>
+    <table class="result-table" id="uni-table"><thead></thead><tbody></tbody></table>
+    <div id="uni-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ BIVARIADO ============ -->
+<section id="bivariado" class="tab-content">
+  <div class="controls">
+    <div class="control-group" style="grid-column: span 2;">
+      <label><span data-i18n="label.outcomes">Outcomes</span>
+        <small style="color:var(--muted)" data-i18n="label.outcomes_help_bi">· one or more for extended bivariate table</small></label>
+      <div id="bi-outcome-select" class="multi-select">
+        <div class="ms-toggle" tabindex="0">
+          <span class="ms-summary" data-i18n="label.click_choose_outcomes">Click to choose outcomes</span>
+          <span class="ms-arrow"></span>
+        </div>
+        <div class="ms-dropdown" hidden>
+          <div class="ms-actions">
+            <button type="button" class="btn btn-secondary" data-action="clear" data-i18n="ms.clear">Clear all</button>
+            <button type="button" class="btn btn-secondary" data-action="ninos" data-i18n="ms.only_children">Children only</button>
+            <button type="button" class="btn btn-secondary" data-action="adultos" data-i18n="ms.only_adults">Adults only</button>
+            <input type="text" class="ms-search" data-i18n-placeholder="ms.filter_outcomes" placeholder="🔎 Filter outcomes...">
+            <button type="button" class="btn ms-close" data-action="close" data-i18n="ms.close">✕ Close</button>
+          </div>
+          <div class="ms-body"></div>
+          <div class="ms-footer">
+            <span class="ms-counter">0 <span data-i18n="ms.selected_many">selected</span></span>
+            <button type="button" class="btn btn-primary ms-apply" data-action="apply" data-i18n="ms.apply_close">Apply and close ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label><span data-i18n="label.covariate">Covariate / main variable</span>
+        <small style="color:var(--muted)" data-i18n="label.covariate_help">(70+ options)</small></label>
+      <select id="bi-cov"></select>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.year">Year</label>
+      <select id="bi-year"></select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="bi-run" data-i18n="btn.calculate">▶ Calculate</button>
+      <button class="btn btn-secondary" id="bi-export" data-i18n="btn.excel">📥 Excel</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2 id="bi-title">Bivariate analysis</h2>
+    <div class="subtitle" id="bi-subtitle"></div>
+    <table class="result-table" id="bi-table"><thead></thead><tbody></tbody></table>
+    <div id="bi-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ MULTIVARIADO ============ -->
+<section id="multivariado" class="tab-content">
+  <div class="controls">
+    <div class="control-group">
+      <label data-i18n="label.outcomes">Outcome</label>
+      <select id="multi-outcome"></select>
+    </div>
+    <div class="control-group" style="grid-column: span 2;">
+      <label><span data-i18n="label.main_vars">Main exposure variables</span>
+        <small style="color:var(--muted)" data-i18n="label.main_vars_help">· choose 1 or several · 70+ grouped options</small></label>
+      <div id="multi-main-select" class="multi-select">
+        <div class="ms-toggle" tabindex="0">
+          <span class="ms-summary" data-i18n="label.click_choose_vars">Click to choose main variables</span>
+          <span class="ms-arrow"></span>
+        </div>
+        <div class="ms-dropdown" hidden>
+          <div class="ms-actions">
+            <button type="button" class="btn btn-secondary" data-action="clear" data-i18n="ms.clear">Clear all</button>
+            <button type="button" class="btn btn-secondary" data-action="sociodemo" data-i18n="ms.only_sociodemo">Only sociodemographic</button>
+            <button type="button" class="btn btn-secondary" data-action="default" data-i18n="ms.default_set">Typical literature set</button>
+            <input type="text" class="ms-search" data-i18n-placeholder="ms.filter_vars" placeholder="🔎 Filter variables...">
+            <button type="button" class="btn ms-close" data-action="close" data-i18n="ms.close">✕ Close</button>
+          </div>
+          <div class="ms-body"></div>
+          <div class="ms-footer">
+            <span class="ms-counter">0 <span data-i18n="ms.selected_many">selected</span></span>
+            <button type="button" class="btn btn-primary ms-apply" data-action="apply" data-i18n="ms.apply_close">Apply and close ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.year">Year</label>
+      <select id="multi-year"></select>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.model">Model</label>
+      <select id="multi-model">
+        <option value="both" data-i18n="model.both">Both (logistic + Poisson)</option>
+        <option value="logit" data-i18n="model.logit">Logistic only (aOR)</option>
+        <option value="poisson" data-i18n="model.poisson">Poisson only (aPR)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="note" id="multi-confusores-note">
+    <strong data-i18n="confounders.note">Adjusted confounders (standard set):</strong>
+    <span id="multi-confusores-list"></span>
+  </div>
+
+  <div class="actions" style="margin-bottom:1rem;">
+    <button class="btn btn-primary" id="multi-run" data-i18n="btn.fit_model">▶ Fit model</button>
+    <button class="btn btn-secondary" id="multi-export" data-i18n="btn.excel">📥 Excel</button>
+    <button class="btn btn-secondary" id="multi-cite" data-i18n="btn.cite_result">📋 Cite this result</button>
+  </div>
+
+  <div class="results">
+    <h2 id="multi-title" data-i18n="multi.title">Multivariate model</h2>
+    <div class="subtitle" id="multi-subtitle"></div>
+    <table class="result-table" id="multi-table"><thead></thead><tbody></tbody></table>
+    <div id="multi-chart" class="chart-container"></div>
+
+    <details class="dag-section" open>
+      <summary><strong data-i18n="dag.title">🔗 Directed Acyclic Graph (DAG)</strong></summary>
+      <div class="note note-info" style="margin-top:0.8rem;" data-i18n="dag.help">
+        The DAG shows how the main variables (blue) and confounders (gray) are assumed to relate to the outcome (red). Solid arrows indicate direct causal effects; dashed arrows indicate non-causal association or backdoor paths. Following Hernán &amp; Robins methodology.
+      </div>
+      <div id="multi-dag" class="dag-container"></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ EXPLORADOR ============ -->
+<section id="explorador" class="tab-content">
+  <div class="note note-info" data-i18n="explorer.note">
+    🔎 Explorer mode: describes any raw variable from the harmonized catalog.
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label data-i18n="explorer.var">Variable</label>
+      <select id="exp-var"></select>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.years">Year(s)</label>
+      <select id="exp-year"></select>
+    </div>
+    <div class="control-group">
+      <label data-i18n="label.stratify_by">Stratify by</label>
+      <select id="exp-strat">
+        <option value="" data-i18n="explorer.total_national">National total</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="exp-run" data-i18n="btn.describe">▶ Describe</button>
+      <button class="btn btn-secondary" id="exp-export" data-i18n="btn.excel">📥 Excel</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2 id="exp-title" data-i18n="explorer.title">Variable distribution</h2>
+    <div class="subtitle" id="exp-subtitle"></div>
+    <table class="result-table" id="exp-table"><thead></thead><tbody></tbody></table>
+    <div id="exp-chart" class="chart-container"></div>
+  </div>
+</section>
+
+<!-- ============ ACERCA DE ============ -->
+<section id="acerca" class="tab-content">
+  <div class="results">
+    <h2 data-i18n="about.title">About this calculator</h2>
+    <p data-i18n="about.description">The Peru DHS Calculator is an open-source web tool...</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.methodology">Methodology</h3>
+    <p data-i18n="about.methodology_desc">All estimates apply the complex sample design...</p>
+    <ul style="margin-left:1.5rem;margin-top:0.5rem;">
+      <li><strong data-i18n="about.aor">Adjusted OR (aOR)</strong></li>
+      <li><strong data-i18n="about.apr">Adjusted PR (aPR)</strong></li>
+    </ul>
+    <p style="margin-top:0.5rem;" data-i18n="about.apr_pref">aPR is the preferred estimator...</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.confounders_title">Standard confounders</h3>
+    <p data-i18n="about.confounders_desc">All multivariate models adjust for: sex, age, area, education, wealth quintile.</p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.outcomes_title">Outcomes included</h3>
+    <p data-i18n="about.outcomes_desc">70 outcomes organized in 5 domains:</p>
+    <div class="summary-card" style="margin-top:0.5rem;">
+      <div class="stat"><div class="stat-label">Children &lt;5</div><div class="stat-value">22</div></div>
+      <div class="stat"><div class="stat-label">WRA</div><div class="stat-value">18</div></div>
+      <div class="stat"><div class="stat-label">Adults health</div><div class="stat-value">13</div></div>
+      <div class="stat"><div class="stat-label">Household</div><div class="stat-value">8</div></div>
+      <div class="stat"><div class="stat-label">Continuous</div><div class="stat-value">9</div></div>
+    </div>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.authorship">Authorship</h3>
+    <div class="credits-card">
+      <div class="name">Dr. Joshuan J. Barboza</div>
+      <div style="color:#e0e7ff;font-size:0.9rem;margin-top:0.2rem;">
+        <span data-i18n="footer.position">Research Professor</span> · <span data-i18n="footer.institution">Señor de Sipán University</span></div>
+      <div style="color:#a5b4fc;font-size:0.85rem;margin-top:0.2rem;" data-i18n="footer.renacyt">
+        RENACYT Distinguished Researcher</div>
+      <div style="color:#cbd5e1;font-size:0.8rem;margin-top:0.5rem;">
+        ORCID: 0000-0002-2896-1407 · SCOPUS ID: 57204457871</div>
+      <div style="color:#fbbf24;font-size:0.85rem;margin-top:0.5rem;">
+        🌐 <a href="https://investigaciontau.com" target="_blank" rel="noopener" style="color:#fbbf24;text-decoration:underline;">investigaciontau.com</a>
+        &nbsp;·&nbsp; ✉️ <a href="mailto:jbarbozameca@gmail.com" style="color:#fbbf24;text-decoration:underline;">jbarbozameca@gmail.com</a>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.how_to_cite">How to cite</h3>
+    <p style="font-style:italic;background:#f3f4f6;padding:1rem;border-radius:6px;font-size:0.9rem;">
+      Barboza JJ. Peru DHS Historical Calculator [Internet]. Señor de Sipán University; 2026.
+      Available from: https://jbarbozameca.github.io/calculadora-ENDES-2026/
+    </p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.data_status">Data status</h3>
+    <p id="data-status"></p>
+
+    <h3 style="margin-top:1.5rem;color:var(--primary);" data-i18n="about.report_error">Report error / Request analysis</h3>
+    <p><span data-i18n="about.contact_text">If you find an error, use the</span>
+      <strong data-i18n="about.help_button_text">📨 Request help</strong>
+      <span data-i18n="about.contact_end">button or email</span>
+      <a href="mailto:jbarbozameca@gmail.com">jbarbozameca@gmail.com</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ========== MODAL HELP ========== -->
+<div class="modal-bg" id="help-modal">
+  <div class="modal">
+    <h3 data-i18n="help.title">📨 Request help</h3>
+    <p style="color:var(--muted);margin-bottom:1rem;" data-i18n="help.intro">Tell us what you need.</p>
+    <div class="form-group">
+      <label data-i18n="help.type">Type of inquiry</label>
+      <select id="help-tipo">
+        <option data-i18n="help.type_error">Error in results</option>
+        <option data-i18n="help.type_missing">Missing variable or outcome</option>
+        <option data-i18n="help.type_method">I don't understand the methodology</option>
+        <option data-i18n="help.type_custom">Request specific unsupported analysis</option>
+        <option data-i18n="help.type_collab">Collaboration or academic citation</option>
+        <option data-i18n="help.type_other">Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label data-i18n="help.name">Your name *</label>
+      <input type="text" id="help-nombre"></div>
+    <div class="form-group"><label data-i18n="help.email">Your email *</label>
+      <input type="email" id="help-email"></div>
+    <div class="form-group"><label data-i18n="help.institution">Institution (optional)</label>
+      <input type="text" id="help-inst"></div>
+    <div class="form-group"><label data-i18n="help.message">Message *</label>
+      <textarea id="help-msg" data-i18n-placeholder="help.message_placeholder" placeholder="Describe your inquiry..."></textarea></div>
+    <div class="form-group"><label data-i18n="help.context">Current context (auto-attached)</label>
+      <input type="text" id="help-context" readonly style="background:#f3f4f6;color:var(--muted);"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="ENDESApp.closeHelp()" data-i18n="btn.cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="ENDESApp.submitHelp()" data-i18n="btn.send">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4 data-i18n="footer.about_section">Peru DHS Calculator</h4>
+      <p data-i18n="footer.about_desc">Population analysis tool...</p>
+      <p style="margin-top:0.8rem;" data-i18n="footer.source">
+        Source: INEI - Peru</p>
+    </div>
+    <div>
+      <h4 data-i18n="footer.authorship">Authorship</h4>
+      <p><strong>Dr. Joshuan J. Barboza</strong></p>
+      <p data-i18n="footer.position">Research Professor</p>
+      <p data-i18n="footer.institution">Señor de Sipán University</p>
+      <p data-i18n="footer.renacyt">RENACYT Distinguished Researcher</p>
+      <p><a href="https://orcid.org/0000-0002-2896-1407" target="_blank" rel="noopener">ORCID 0000-0002-2896-1407</a></p>
+      <p style="margin-top:0.5rem;color:#fbbf24;">
+        <span data-i18n="footer.website">Research website:</span>
+        <a href="https://investigaciontau.com" target="_blank" rel="noopener"
+           style="color:#fbbf24;text-decoration:underline;">investigaciontau.com</a></p>
+      <p style="color:#fbbf24;">
+        <span data-i18n="footer.email_corresp">Correspondence:</span>
+        <a href="mailto:jbarbozameca@gmail.com"
+           style="color:#fbbf24;text-decoration:underline;">jbarbozameca@gmail.com</a></p>
+    </div>
+    <div>
+      <h4 data-i18n="footer.resources">Resources</h4>
+      <p><a href="#" data-tab-link="acerca" data-i18n="footer.methodology_link">Methodology</a></p>
+      <p><a href="#" onclick="ENDESApp.openHelp();return false;" data-i18n="footer.report_error_link">Report error</a></p>
+      <p><a href="https://proyectos.inei.gob.pe/microdatos/" target="_blank" rel="noopener" data-i18n="footer.inei_link">INEI Microdata</a></p>
+      <p><a href="#"><span data-i18n="footer.version">Version:</span> <span id="data-version">—</span></a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 Dr. Joshuan J. Barboza · <span data-i18n="footer.institution">Señor de Sipán University</span> ·
+    <span data-i18n="footer.legal">Data: INEI Peru · License:</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/" style="color:#9ca3af;" target="_blank" rel="noopener">CC-BY 4.0</a>
+  </div>
+</footer>
+
+<!-- Libraries -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" onerror="console.warn('Plotly CDN failed')"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js" onerror="console.warn('XLSX CDN failed')"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" onerror="console.warn('Mermaid CDN failed')"></script>
+<script>
+  try {
+    if (typeof mermaid !== "undefined") {
+      mermaid.initialize({ startOnLoad: false, theme: "base",
+        themeVariables: { primaryColor:"#dbeafe", primaryTextColor:"#1e3a8a",
+          primaryBorderColor:"#003366", lineColor:"#6b7280",
+          secondaryColor:"#fef3c7", tertiaryColor:"#fee2e2" } });
+    }
+  } catch (e) { console.warn("Mermaid init:", e); }
+</script>
+
+<script src="data.js?v=1.5.0"></script>
+<script src="app.js?v=1.5.0"></script>
+</body>
+</html>
